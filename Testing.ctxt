@@ -1,0 +1,7 @@
+#BlueJ class context
+comment0.target=Testing
+comment1.params=
+comment1.target=Testing()
+comment2.params=location\ span
+comment2.target=java.util.List\ getAdjacentLocationsGeneric(Location,\ int)
+numComments=3

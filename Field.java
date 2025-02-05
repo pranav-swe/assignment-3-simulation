@@ -63,10 +63,29 @@ public class Field
      * @param location Get locations adjacent to this.
      * @return A list of free adjacent locations.
      */
+
     public List<Location> getFreeAdjacentLocations(Location location)
     {
+        return getFreeLocationsInSpan(location, 1);
+    }
+
+    /**
+     * Return a shuffled list of locations adjacent to the given one.
+     * The list will not include the location itself.
+     * All locations will lie within the grid.
+     * @param location The location from which to generate adjacencies.
+     * @return A list of locations adjacent to that given.
+     */
+
+    public List<Location> getAdjacentLocations(Location location)
+    {
+        return getLocationsInSpan(location, 1);
+    }
+
+    public List<Location> getFreeLocationsInSpan(Location location, int span)
+    {
         List<Location> free = new LinkedList<>();
-        List<Location> adjacent = getAdjacentLocations(location);
+        List<Location> adjacent = getLocationsInSpan(location, span);
         for(Location next : adjacent) {
             Animal anAnimal = field.get(next);
             if(anAnimal == null) {
@@ -79,24 +98,17 @@ public class Field
         return free;
     }
 
-    /**
-     * Return a shuffled list of locations adjacent to the given one.
-     * The list will not include the location itself.
-     * All locations will lie within the grid.
-     * @param location The location from which to generate adjacencies.
-     * @return A list of locations adjacent to that given.
-     */
-    public List<Location> getAdjacentLocations(Location location)
+    public List<Location> getLocationsInSpan(Location location, int span)
     {
         // The list of locations to be returned.
         List<Location> locations = new ArrayList<>();
         if(location != null) {
             int row = location.row();
             int col = location.col();
-            for(int roffset = -1; roffset <= 1; roffset++) {
+            for(int roffset = -span; roffset <= span; roffset++) {
                 int nextRow = row + roffset;
                 if(nextRow >= 0 && nextRow < depth) {
-                    for(int coffset = -1; coffset <= 1; coffset++) {
+                    for(int coffset = -span; coffset <= span; coffset++) {
                         int nextCol = col + coffset;
                         // Exclude invalid locations and the original location.
                         if(nextCol >= 0 && nextCol < width && (roffset != 0 || coffset != 0)) {
@@ -116,23 +128,26 @@ public class Field
     /**
      * Print out the number of foxes and rabbits in the field.
      */
-    public void fieldStats()
-    {
-        int numFoxes = 0, numRabbits = 0;
-        for(Animal anAnimal : field.values()) {
-            if(anAnimal instanceof Fox fox) {
-                if(fox.isAlive()) {
-                    numFoxes++;
-                }
-            }
-            else if(anAnimal instanceof Rabbit rabbit) {
-                if(rabbit.isAlive()) {
-                    numRabbits++;
-                }
+    public String fieldStats() {
+        Map<Class<? extends Animal>, Integer> animalTypeCountMap = new HashMap<>();
+        for (Animal anAnimal : field.values()) {
+            Class<? extends Animal> animalClass = anAnimal.getClass();
+            Integer count = animalTypeCountMap.get(animalClass);
+            if (count == null) {
+                animalTypeCountMap.put(animalClass, 1);
+            } else {
+                animalTypeCountMap.put(animalClass, count + 1);
             }
         }
-        System.out.println("Rabbits: " + numRabbits +
-                           " Foxes: " + numFoxes);
+
+        String statsString = "";
+
+        for (Class<? extends Animal> animalClass : animalTypeCountMap.keySet()) {
+            Integer count = animalTypeCountMap.get(animalClass);
+            statsString += String.format("%s : %d\n", animalClass.getSimpleName(), count);
+        }
+
+        return statsString;
     }
 
     /**
@@ -149,6 +164,8 @@ public class Field
      */
     public boolean isViable()
     {
+        return true;
+        /* 
         boolean rabbitFound = false;
         boolean foxFound = false;
         Iterator<Animal> it = animals.iterator();
@@ -166,6 +183,7 @@ public class Field
             }
         }
         return rabbitFound && foxFound;
+        */
     }
     
     /**

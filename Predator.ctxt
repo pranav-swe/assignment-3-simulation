@@ -1,0 +1,21 @@
+#BlueJ class context
+comment0.target=Predator
+comment1.params=randomAge\ gender\ location\ BREEDING_AGE\ MAX_AGE\ BREEDING_PROBABILITY\ MAX_LITTER_SIZE\ PREY_FOOD_VALUE\ preyAnimalType
+comment1.target=Predator(boolean,\ boolean,\ Location,\ int,\ int,\ double,\ int,\ int,\ java.lang.Class)
+comment2.params=nextFieldState
+comment2.target=boolean\ maleInVicinity(Field)
+comment3.params=currentField\ nextFieldState\ isDay
+comment3.target=void\ act(Field,\ Field,\ boolean)
+comment4.params=
+comment4.target=void\ incrementAge()
+comment5.params=
+comment5.target=void\ incrementHunger()
+comment6.params=field
+comment6.target=Location\ findFood(Field)
+comment7.params=nextFieldState\ freeLocations
+comment7.target=void\ giveBirth(Field,\ java.util.List)
+comment8.params=
+comment8.target=int\ breed()
+comment9.params=
+comment9.target=boolean\ canBreed()
+numComments=10

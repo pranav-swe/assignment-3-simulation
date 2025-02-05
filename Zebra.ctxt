@@ -1,0 +1,5 @@
+#BlueJ class context
+comment0.target=Zebra
+comment1.params=randomAge\ gender\ location
+comment1.target=Zebra(boolean,\ boolean,\ Location)
+numComments=2

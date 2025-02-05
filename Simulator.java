@@ -1,3 +1,4 @@
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -9,15 +10,15 @@ import java.util.*;
  */
 public class Simulator
 {
+    
     // Constants representing configuration information for the simulation.
     // The default width for the grid.
     private static final int DEFAULT_WIDTH = 120;
     // The default depth of the grid.
     private static final int DEFAULT_DEPTH = 80;
     // The probability that a fox will be created in any given grid position.
-    private static final double FOX_CREATION_PROBABILITY = 0.02;
-    // The probability that a rabbit will be created in any given position.
-    private static final double RABBIT_CREATION_PROBABILITY = 0.08;    
+
+    private HashMap<Class<? extends Animal>, Double> animalTypeCreationProbabilityMap = new HashMap<>();
 
     // The current state of the field.
     private Field field;
@@ -25,6 +26,9 @@ public class Simulator
     private int step;
     // A graphical view of the simulation.
     private final SimulatorView view;
+
+    private boolean isDay = true;
+    // 0 for day, 1 for night
 
     /**
      * Construct a simulation field with default size.
@@ -51,7 +55,23 @@ public class Simulator
         field = new Field(depth, width);
         view = new SimulatorView(depth, width);
 
+        setUpAnimalTypeCreationProbabilityMap();
+
         reset();
+    }
+
+    public void setUpAnimalTypeCreationProbabilityMap() {
+        double ZEBRA_CREATION_PROBABILITY = 0.05;
+        double LION_CREATION_PROBABILITY = 0.03;
+        double GAZELLE_CREATION_PROBABILITY = 0.05;
+        double HYENA_CREATION_PROBABILITY = 0.03;
+        double CHEETAH_CREATION_PROBABILITY = 0.03;
+
+        animalTypeCreationProbabilityMap.put(Zebra.class, ZEBRA_CREATION_PROBABILITY);
+        animalTypeCreationProbabilityMap.put(Lion.class, LION_CREATION_PROBABILITY);
+        animalTypeCreationProbabilityMap.put(Gazelle.class, GAZELLE_CREATION_PROBABILITY);
+        animalTypeCreationProbabilityMap.put(Hyena.class, HYENA_CREATION_PROBABILITY);
+        animalTypeCreationProbabilityMap.put(Cheetah.class, CHEETAH_CREATION_PROBABILITY);
     }
     
     /**
@@ -76,6 +96,10 @@ public class Simulator
             delay(50);         // adjust this to change execution speed
         }
     }
+
+    private void changeDayOrNight() {
+        isDay = !isDay;
+    }
     
     /**
      * Run the simulation from its current state for a single step.
@@ -83,14 +107,17 @@ public class Simulator
      */
     public void simulateOneStep()
     {
+        changeDayOrNight();
+
         step++;
         // Use a separate Field to store the starting state of
         // the next step.
         Field nextFieldState = new Field(field.getDepth(), field.getWidth());
 
+
         List<Animal> animals = field.getAnimals();
         for (Animal anAnimal : animals) {
-            anAnimal.act(field, nextFieldState);
+            anAnimal.act(field, nextFieldState, isDay);
         }
         
         // Replace the old state with the new one.
@@ -117,19 +144,24 @@ public class Simulator
     {
         Random rand = Randomizer.getRandom();
         field.clear();
-        for(int row = 0; row < field.getDepth(); row++) {
-            for(int col = 0; col < field.getWidth(); col++) {
-                if(rand.nextDouble() <= FOX_CREATION_PROBABILITY) {
-                    Location location = new Location(row, col);
-                    Fox fox = new Fox(true, location);
-                    field.placeAnimal(fox, location);
+        for (int row = 0; row < field.getDepth(); row++) {
+            for (int col = 0; col < field.getWidth(); col++) {
+                for (Class<? extends Animal> animalType : animalTypeCreationProbabilityMap.keySet()) {
+                    double creationProbability = animalTypeCreationProbabilityMap.get(animalType);
+                    if (rand.nextDouble() <= creationProbability) {
+                        Location location = new Location(row, col);
+                        try {
+                            Animal animal = animalType.getDeclaredConstructor(
+                                boolean.class, boolean.class, Location.class
+                            ).newInstance(true, Animal.getRandomGender(), location);
+                            field.placeAnimal(animal, location);
+                            System.out.println(animal.getClass().getSimpleName() + " created at " + location);
+                            break;
+                        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
-                else if(rand.nextDouble() <= RABBIT_CREATION_PROBABILITY) {
-                    Location location = new Location(row, col);
-                    Rabbit rabbit = new Rabbit(true, location);
-                    field.placeAnimal(rabbit, location);
-                }
-                // else leave the location empty.
             }
         }
     }
@@ -139,8 +171,7 @@ public class Simulator
      */
     public void reportStats()
     {
-        //System.out.print("Step: " + step + " ");
-        field.fieldStats();
+        System.out.println(field.fieldStats());
     }
     
     /**

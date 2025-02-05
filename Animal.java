@@ -11,15 +11,25 @@ public abstract class Animal
     private boolean alive;
     // The animal's position.
     private Location location;
+    private boolean gender;
 
     /**
      * Constructor for objects of class Animal.
      * @param location The animal's location.
      */
-    public Animal(Location location)
+    public Animal(Location location, boolean geneder)
     {
+        this.gender = geneder;
         this.alive = true;
         this.location = location;
+    }
+
+    public static boolean getRandomGender() {
+        return Math.random() < 0.5;
+    }
+
+    public boolean getGender() {
+        return gender;
     }
     
     /**
@@ -27,7 +37,7 @@ public abstract class Animal
      * @param currentField The current state of the field.
      * @param nextFieldState The new state being built.
      */
-    abstract public void act(Field currentField, Field nextFieldState);
+    abstract public void act(Field currentField, Field nextFieldState, boolean isDay);
     
     /**
      * Check whether the animal is alive or not.

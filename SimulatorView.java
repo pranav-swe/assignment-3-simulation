@@ -41,8 +41,12 @@ public class SimulatorView extends JFrame
     {
         stats = new FieldStats();
         colors = new LinkedHashMap<>();
-        setColor(Rabbit.class, Color.orange);
-        setColor(Fox.class, Color.blue);
+        // TODO: Make this completely dynamic and the settings are done via some definition within some collection or sth
+        setColor(Lion.class, Color.red);
+        setColor(Zebra.class, Color.green);
+        setColor(Hyena.class, Color.blue);
+        setColor(Cheetah.class, Color.orange);
+        setColor(Gazelle.class, Color.yellow);
 
         setTitle("Fox and Rabbit Simulation");
         stepLabel = new JLabel(STEP_PREFIX, JLabel.CENTER);
