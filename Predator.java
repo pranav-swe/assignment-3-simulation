@@ -150,6 +150,13 @@ public class Predator extends Animal  {
             if (potentialPrey != null && potentialPrey.getCategory().equals(getCategory())) {
                 if (potentialPrey.isAlive()) {
                     System.out.println("PRED ATE FOOD");
+                    if (potentialPrey.getIsSick()) {
+                        setSickness(true);
+                        age += 10;
+                        if (age > MAX_AGE) {
+                            setDead();
+                        }
+                    }
                     potentialPrey.setDead();
                     foodLevel = PREY_FOOD_VALUE;
                     foodLocation = loc;

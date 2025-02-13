@@ -72,6 +72,7 @@ public class Simulator
         weatherTypes.add("DROUGHT");
         weatherTypes.add("SAND_STORM");
         weatherTypes.add("WILD_FIRE");
+        weatherTypes.add("NORMAL");
     }
 
     public void setUpAnimalTypeCreationProbabilityMap() {

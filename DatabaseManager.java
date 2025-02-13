@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DatabaseManager {
-    private static final String JDBC_URL = "jdbc:postgresql://localhost:5432/pred-prey-sim-db";
+    private static final String JDBC_URL = "jdbc:postgresql://ep-withered-term-a5vyn7fg-pooler.us-east-2.aws.neon.tech/neondb?user=neondb_owner&password=npg_XdLsVl8uBJ2Z&sslmode=require";
     private static final String USERNAME = "postgres";
     private static final String PASSWORD = "admin";
 
