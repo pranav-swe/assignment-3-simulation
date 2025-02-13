@@ -89,6 +89,10 @@ public class Predator extends Animal  {
             if ("WILDFIRE".equals(weather) && rand.nextDouble() <= 0.2) {
                 setDead();
             } else {
+                if (!isDay) {
+                    nextFieldState.placeAnimal(this, getLocation());
+                    return;
+                }
                 List<Location> freeLocations = nextFieldState.getFreeAdjacentLocations(getLocation());
                 if (!freeLocations.isEmpty() && gender && maleInVicinity(nextFieldState)) {
                     giveBirth(nextFieldState, freeLocations);
@@ -165,7 +169,7 @@ public class Predator extends Animal  {
                 Predator young = new Predator(true, getRandomGender(), loc, BREEDING_AGE, MAX_AGE, BREEDING_PROBABILITY, MAX_LITTER_SIZE, PREY_FOOD_VALUE, PREY_ANIMAL_TYPE, getCategory());
                 nextFieldState.placeAnimal(young, loc);
 
-                // System.out.println("PRED BIRTH");
+                System.out.println("PRED BIRTH");
             }
         }
     }

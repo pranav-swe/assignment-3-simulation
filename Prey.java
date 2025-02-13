@@ -88,10 +88,9 @@ public class Prey extends Animal  {
         determineSickness();
         incrementHunger();
         if (isAlive()) {
-            if ("wildfire".equals(weather) && rand.nextDouble() <= 0.20) {
+            if ("WILDFIRE".equals(weather) && rand.nextDouble() <= 0.20) {
                 setDead();
             } else {
-                System.out.println("PREY MAX_AGE : " + MAX_AGE + ", PREY AGE : " + age);
                 List<Location> freeLocations = nextFieldState.getFreeAdjacentLocations(getLocation());
                 if (!freeLocations.isEmpty() && gender && maleInVicinity(nextFieldState)) {
                     giveBirth(nextFieldState, freeLocations);
