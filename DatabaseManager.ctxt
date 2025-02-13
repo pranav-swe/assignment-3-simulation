@@ -1,0 +1,21 @@
+#BlueJ class context
+comment0.target=DatabaseManager
+comment1.params=
+comment1.target=void\ createTable()
+comment2.params=
+comment2.target=java.util.List\ retrieveAllSimulations()
+comment3.params=id
+comment3.target=void\ deleteSimulation(int)
+comment4.params=entityData
+comment4.target=void\ insertSimulation(java.util.Map)
+comment5.params=id
+comment5.target=java.util.List\ retrieveSimulationAnimalConfig(int)
+comment6.params=id
+comment6.target=java.util.List\ retrieveSimulationPlantConfig(int)
+comment7.params=name\ email
+comment7.target=void\ insertData(java.lang.String,\ java.lang.String)
+comment8.params=
+comment8.target=java.sql.ResultSet\ retrieveData()
+comment9.params=
+comment9.target=java.util.List\ getAllPlantAndAnimalTypes()
+numComments=10

@@ -1,7 +1,7 @@
 import java.awt.*;
-import javax.swing.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.*;
 
 /**
  * A graphical view of the simulation grid.
@@ -20,6 +20,7 @@ public class SimulatorView extends JFrame
 
     // Color used for objects that have no defined color.
     private static final Color UNKNOWN_COLOR = Color.gray;
+    
 
     private final String STEP_PREFIX = "Step: ";
     private final String POPULATION_PREFIX = "Population: ";
@@ -28,7 +29,7 @@ public class SimulatorView extends JFrame
     private final FieldView fieldView;
     
     // A map for storing colors for participants in the simulation
-    private final Map<Class<?>, Color> colors;
+    private final Map<String, Color> colors;
     // A statistics object computing and storing simulation information
     private final FieldStats stats;
 
@@ -39,14 +40,12 @@ public class SimulatorView extends JFrame
      */
     public SimulatorView(int height, int width)
     {
-        stats = new FieldStats();
         colors = new LinkedHashMap<>();
         // TODO: Make this completely dynamic and the settings are done via some definition within some collection or sth
-        setColor(Lion.class, Color.red);
-        setColor(Zebra.class, Color.green);
-        setColor(Hyena.class, Color.blue);
-        setColor(Cheetah.class, Color.orange);
-        setColor(Gazelle.class, Color.yellow);
+
+        setupColorMap();
+
+        stats = new FieldStats(colors);
 
         setTitle("Fox and Rabbit Simulation");
         stepLabel = new JLabel(STEP_PREFIX, JLabel.CENTER);
@@ -63,13 +62,23 @@ public class SimulatorView extends JFrame
         pack();
         setVisible(true);
     }
+
+    public void setupColorMap() {
+        for (String animalType : DatabaseManager.getAllPlantAndAnimalTypes()) {
+            Color color = new Color((int)(Math.random() * 0x1000000));
+            while (colors.containsValue(color)) {
+                color = new Color((int)(Math.random() * 0x1000000));
+            }
+            setColor(animalType, color);
+        }
+    }
     
     /**
      * Define a color to be used for a given class of animal.
      * @param animalClass The animal's Class object.
      * @param color The color to be used for the given class.
      */
-    public void setColor(Class<?> animalClass, Color color)
+    public void setColor(String animalClass, Color color)
     {
         colors.put(animalClass, color);
     }
@@ -77,7 +86,7 @@ public class SimulatorView extends JFrame
     /**
      * @return The color to be used for a given class of animal.
      */
-    private Color getColor(Class<?> animalClass)
+    private Color getColor(String animalClass)
     {
         Color col = colors.get(animalClass);
         if(col == null) {
@@ -107,10 +116,10 @@ public class SimulatorView extends JFrame
 
         for(int row = 0; row < field.getDepth(); row++) {
             for(int col = 0; col < field.getWidth(); col++) {
-                Object animal = field.getAnimalAt(new Location(row, col));
+                Animal animal = field.getAnimalAt(new Location(row, col));
                 if(animal != null) {
-                    stats.incrementCount(animal.getClass());
-                    fieldView.drawMark(col, row, getColor(animal.getClass()));
+                    stats.incrementCount(animal.getCategory());
+                    fieldView.drawMark(col, row, getColor(animal.getCategory()));
                 }
                 else {
                     fieldView.drawMark(col, row, EMPTY_COLOR);
@@ -119,7 +128,7 @@ public class SimulatorView extends JFrame
         }
         stats.countFinished();
 
-        population.setText(POPULATION_PREFIX + stats.getPopulationDetails(field));
+        population.setText("<html>" + stats.getPopulationDetails(field) + "</html>");
         fieldView.repaint();
     }
 

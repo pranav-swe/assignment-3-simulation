@@ -19,6 +19,11 @@ public class Field
     // The animals.
     private final List<Animal> animals = new ArrayList<>();
 
+    private final List<Plant> plants = new ArrayList<>();
+
+    // Grass mapped by location.
+    public final Map<Location, Plant> plantField = new HashMap<>();
+
     /**
      * Represent a field of the given dimensions.
      * @param depth The depth of the field.
@@ -47,6 +52,18 @@ public class Field
         field.put(location, anAnimal);
         animals.add(anAnimal);
     }
+
+    // TODO: Change the naming of this. Its really bad. 
+    public void placeAnimal(Plant plant, Location location)
+    {
+        // assert location != null;
+        Object other = plantField.get(location);
+        if(other != null) {
+            plantField.remove(location);
+        }
+        plantField.put(location, plant);
+        plants.add(plant);
+    }
     
     /**
      * Return the animal at the given location, if any.
@@ -56,6 +73,11 @@ public class Field
     public Animal getAnimalAt(Location location)
     {
         return field.get(location);
+    }
+
+    public Plant getPlantAt(Location location)
+    {
+        return plantField.get(location);
     }
 
     /**
@@ -68,6 +90,29 @@ public class Field
     {
         return getFreeLocationsInSpan(location, 1);
     }
+
+    public List<Location> getFreeAdjacentLocationsPlants(Location location)
+    {
+        return getFreeLocationsInSpanPlant(location, 1);
+    }
+
+    public List<Location> getFreeLocationsInSpanPlant(Location location, int span)
+    {
+        List<Location> free = new LinkedList<>();
+        List<Location> adjacent = getLocationsInSpan(location, span);
+        for(Location next : adjacent) {
+            Plant plant = plantField.get(next);
+            if(plant == null) {
+                free.add(next);
+            }
+            else if(!plant.isAlive()) {
+                free.add(next);
+            }
+        }
+        return free;
+    }
+
+
 
     /**
      * Return a shuffled list of locations adjacent to the given one.
@@ -192,6 +237,11 @@ public class Field
     public List<Animal> getAnimals()
     {
         return animals;
+    }
+
+    public List<Plant> getPlants()
+    {
+        return plants;
     }
 
     /**

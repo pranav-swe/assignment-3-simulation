@@ -1,8 +1,8 @@
-import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-public abstract class Prey extends Animal  {
+public class Prey extends Animal  {
     // Characteristics shared by all foxes (class variables).
     // The age at which a fox can start to breed.
     private int BREEDING_AGE;
@@ -12,22 +12,27 @@ public abstract class Prey extends Animal  {
     private double BREEDING_PROBABILITY;
     // The maximum number of births.
     private int MAX_LITTER_SIZE;
+
+    private int PREY_FOOD_VALUE;
     // The food value of a single rabbit. In effect, this is the
     // number of steps a fox can go before it has to eat again.
     // A shared random number generator to control breeding.
 
+    private String PREY_ANIMAL_TYPE; // TODO: Change to Prey
+
     private Random rand = Randomizer.getRandom();
 
-    protected int age;
-    protected int foodLevel;
-    protected boolean gender;
+    public int age;
+    public int foodLevel;
+    public boolean gender;
 
     public Prey(
         boolean randomAge, boolean gender, Location location,
-        int BREEDING_AGE, int MAX_AGE, double BREEDING_PROBABILITY, int MAX_LITTER_SIZE
+        int BREEDING_AGE, int MAX_AGE, double BREEDING_PROBABILITY, int MAX_LITTER_SIZE, int PREY_FOOD_VALUE, String preyAnimalType,
+        String category
     )
     {
-        super(location, gender);
+        super(location, gender, category);
         if(randomAge) {
             age = rand.nextInt(MAX_AGE);
         }
@@ -39,8 +44,12 @@ public abstract class Prey extends Animal  {
         this.MAX_AGE = MAX_AGE;
         this.BREEDING_PROBABILITY = BREEDING_PROBABILITY;
         this.MAX_LITTER_SIZE = MAX_LITTER_SIZE;
+        this.PREY_FOOD_VALUE = PREY_FOOD_VALUE;
+        this.PREY_ANIMAL_TYPE = preyAnimalType;
 
         this.gender = gender;
+
+        foodLevel = rand.nextInt(PREY_FOOD_VALUE);
     }
 
     public boolean maleInVicinity(Field nextFieldState) {
@@ -48,7 +57,7 @@ public abstract class Prey extends Animal  {
         nextFieldState.getLocationsInSpan(getLocation(), 100);
         for (Location loc : freeLocationsGeneric) {
             Animal potentialMate = nextFieldState.getAnimalAt(loc);
-            if (this.getClass().isInstance(potentialMate)) {
+            if (potentialMate != null && potentialMate.getCategory().equals(getCategory())) {
                 if (!potentialMate.getGender()) {
                     return true;
                 }
@@ -57,26 +66,78 @@ public abstract class Prey extends Animal  {
         return false;
     }
 
-    public void act(Field currentField, Field nextFieldState, boolean isDay)
-    {
-        // incrementAge();
-        if (isAlive()) {
-            List<Location> freeLocations = nextFieldState.getFreeAdjacentLocations(getLocation());
-            if (!freeLocations.isEmpty() && gender && maleInVicinity(nextFieldState)) {
-                giveBirth(nextFieldState, freeLocations);
-            }
-            if (!isDay) {
-                nextFieldState.placeAnimal(this, getLocation());
-            }
-            else if (!freeLocations.isEmpty()) {
-                Location nextLocation = freeLocations.get(0);
-                setLocation(nextLocation);
-                nextFieldState.placeAnimal(this, nextLocation);
-            }
-            else {
-                setDead();
+    public boolean sickAnimalInVicinity(Field nextFieldState) {
+        List<Location> freeLocationsGeneric =
+        nextFieldState.getLocationsInSpan(getLocation(), 2);
+        for (Location loc : freeLocationsGeneric) {
+            Animal potentialInfector = nextFieldState.getAnimalAt(loc);
+            if (potentialInfector != null && potentialInfector.getIsSick()) {
+                setSickness(true);
+                age += 10;
+                if (age > MAX_AGE) {
+                    setDead();
+                }
             }
         }
+        return false;
+    }
+
+    public void act(Field currentField, Field nextFieldState, boolean isDay, String weather)
+    {
+        incrementAge();
+        determineSickness();
+        incrementHunger();
+        if (isAlive()) {
+            if ("wildfire".equals(weather) && rand.nextDouble() <= 0.20) {
+                setDead();
+            } else {
+                System.out.println("PREY MAX_AGE : " + MAX_AGE + ", PREY AGE : " + age);
+                List<Location> freeLocations = nextFieldState.getFreeAdjacentLocations(getLocation());
+                if (!freeLocations.isEmpty() && gender && maleInVicinity(nextFieldState)) {
+                    giveBirth(nextFieldState, freeLocations);
+                }
+                if (!isDay) {
+                    nextFieldState.placeAnimal(this, getLocation());
+                } else {
+                    Location nextLocation = findFood(currentField);
+                    if (nextLocation == null && !freeLocations.isEmpty()) {
+                        // No food found - try to move to a free location.
+                        nextLocation = freeLocations.remove(0);
+                    }
+                    // See if it was possible to move.
+                    if (nextLocation != null) {
+                        setLocation(nextLocation);
+                        nextFieldState.placeAnimal(this, nextLocation);
+                    } else {
+                        // Overcrowding.
+                        setDead();
+                    }
+                }
+            }
+        }
+    }
+
+    protected Location findFood(Field field)
+    {
+        List<Location> adjacent = field.getAdjacentLocations(getLocation());
+        Iterator<Location> it = adjacent.iterator();
+        Location foodLocation = null;
+        while (foodLocation == null && it.hasNext()) {
+            Location loc = it.next();
+            Plant potentialPrey = field.getPlantAt(loc);
+            if (potentialPrey != null && potentialPrey.getType().equals(PREY_ANIMAL_TYPE)) {
+                if (potentialPrey.isAlive()) {
+                    // System.out.println("PREY ATE FOOD");
+                    potentialPrey.setDead();
+                    foodLevel = PREY_FOOD_VALUE;
+                    foodLocation = loc;
+                    if (potentialPrey.getIsPoisonous()) {
+                        setDead();
+                    }
+                }
+            }
+        }
+        return foodLocation;
     }
 
     protected void incrementAge()
@@ -93,14 +154,12 @@ public abstract class Prey extends Animal  {
         if (births > 0) {
             for (int b = 0; b < births && ! freeLocations.isEmpty(); b++) {
                 Location loc = freeLocations.remove(0);
-                try {
-                    // Use reflection to create a new instance of the subclass
-                    Animal young = this.getClass().getDeclaredConstructor(boolean.class, boolean.class, Location.class)
-                            .newInstance(false, Animal.getRandomGender(), loc);
-                    nextFieldState.placeAnimal(young, loc);
-                } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
+
+                Prey young = new Prey(true, getRandomGender(), loc, BREEDING_AGE, MAX_AGE, BREEDING_PROBABILITY, MAX_LITTER_SIZE, PREY_FOOD_VALUE, PREY_ANIMAL_TYPE, getCategory());
+
+                nextFieldState.placeAnimal(young, loc);
+
+                // System.out.println("PREY BIRTH");
             }
         }
     }
@@ -120,5 +179,13 @@ public abstract class Prey extends Animal  {
     protected boolean canBreed()
     {
         return age >= BREEDING_AGE;
+    }
+
+    protected void incrementHunger()
+    {
+        foodLevel--;
+        if(foodLevel <= 0) {
+            setDead();
+        }
     }
 }

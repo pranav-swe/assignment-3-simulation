@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,18 +13,22 @@ import java.util.Map;
 public class FieldStats
 {
     // Counters for each type of entity (fox, rabbit, etc.) in the simulation.
-    private final Map<Class<?>, Counter> counters;
+    private final Map<String, Counter> counters;
+
+    private final Map<String, Color> colorMap;
+
     // Whether the counters are currently up to date.
     private boolean countsValid;
 
     /**
      * Construct a FieldStats object.
      */
-    public FieldStats()
+    public FieldStats(Map<String, Color> colors)
     {
         // Set up a collection for counters for each type of animal that
         // we might find
         counters = new HashMap<>();
+        colorMap = colors;
         countsValid = true;
     }
 
@@ -33,17 +38,17 @@ public class FieldStats
      */
     public String getPopulationDetails(Field field)
     {
-        StringBuilder details = new StringBuilder();
+        StringBuilder details = new StringBuilder("<div>");
         if(!countsValid) {
             generateCounts(field);
         }
-        for(Class<?> key : counters.keySet()) {
+        for(String key : counters.keySet()) {
             Counter info = counters.get(key);
-            details.append(info.getName())
-                   .append(": ")
-                   .append(info.getCount())
-                   .append(' ');
+            Color color = colorMap.get(info.getName());
+            String colorString = color != null ? String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue()) : "#000000"; // Default to black if color is null
+            details.append(String.format("<span style='color:%s'>%s</span> : %d ", colorString, info.getName(), info.getCount()));
         }
+        details.append("</div>");
         return details.toString();
     }
     
@@ -54,7 +59,7 @@ public class FieldStats
     public void reset()
     {
         countsValid = false;
-        for(Class<?> key : counters.keySet()) {
+        for(String key : counters.keySet()) {
             Counter count = counters.get(key);
             count.reset();
         }
@@ -64,13 +69,13 @@ public class FieldStats
      * Increment the count for one class of animal.
      * @param animalClass The class of animal to increment.
      */
-    public void incrementCount(Class<?> animalClass)
+    public void incrementCount(String animalClass)
     {
         Counter count = counters.get(animalClass);
         if(count == null) {
             // We do not have a counter for this species yet.
             // Create one.
-            count = new Counter(animalClass.getName());
+            count = new Counter(animalClass);
             counters.put(animalClass, count);
         }
         count.increment();
@@ -108,7 +113,7 @@ public class FieldStats
             for(int col = 0; col < field.getWidth(); col++) {
                 Animal animal = field.getAnimalAt(new Location(row, col));
                 if(animal != null) {
-                    incrementCount(animal.getClass());
+                    incrementCount(animal.getCategory());
                 }
             }
         }

@@ -1,0 +1,5 @@
+#BlueJ class context
+comment0.target=Grass
+comment1.params=location\ randomAge
+comment1.target=Grass(Location,\ boolean)
+numComments=2

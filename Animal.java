@@ -12,16 +12,29 @@ public abstract class Animal
     // The animal's position.
     private Location location;
     private boolean gender;
+    private boolean isSick;
+    private String category;
 
     /**
      * Constructor for objects of class Animal.
      * @param location The animal's location.
      */
-    public Animal(Location location, boolean geneder)
+    public Animal(Location location, boolean geneder, String category)
     {
         this.gender = geneder;
         this.alive = true;
         this.location = location;
+        this.category = category;
+
+        determineSickness();
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void determineSickness() {
+        isSick = Math.random() < 0.3;
     }
 
     public static boolean getRandomGender() {
@@ -31,13 +44,21 @@ public abstract class Animal
     public boolean getGender() {
         return gender;
     }
-    
+
+    public void setSickness(boolean isSick) {
+        this.isSick = isSick;
+    }
+
+    public boolean getIsSick() {
+        return isSick;
+    }
+
     /**
      * Act.
      * @param currentField The current state of the field.
      * @param nextFieldState The new state being built.
      */
-    abstract public void act(Field currentField, Field nextFieldState, boolean isDay);
+    abstract public void act(Field currentField, Field nextFieldState, boolean isDay, String weather);
     
     /**
      * Check whether the animal is alive or not.

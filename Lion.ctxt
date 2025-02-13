@@ -1,7 +1,7 @@
 #BlueJ class context
 comment0.target=Lion
-comment1.params=randomAge\ gender\ location
-comment1.target=Lion(boolean,\ boolean,\ Location)
+comment1.params=randomAge\ gender\ location\ category
+comment1.target=Lion(boolean,\ boolean,\ Location,\ java.lang.String)
 comment2.params=
 comment2.target=java.lang.String\ toString()
 numComments=3
